@@ -1,3 +1,5 @@
+# Inchk
+
 Inchk (Internet Check) is a small utility written in python that quickly checks your network access.  The only dependency is ANSI enabled (which should be default on linux).
 It takes the following steps to determine your network access
 Ping Main Host (google.com default) 
