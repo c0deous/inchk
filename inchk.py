@@ -38,7 +38,7 @@ def ping(host, pingtimes, interface):
 	try: 
 		pingtimes = int(pingtimes)
 	except ValueError:
-		print("[!] Encountered a ValueError when setting pingtimes (pingtimes must be an integer and wasn't)")
+		print(ssb.fail + " Encountered a ValueError when setting pingtimes (pingtimes must be an integer and wasn't)")
 		exit()
 
 	if pingtimes == 0:
@@ -87,58 +87,58 @@ def main():
 		pass
 	print(txtclr("Inchk 1.0 Copyright 2015 Jesse Wallace", "HEADER"))
 	if options.foption != True:
-		print(ssb.working + "Testing pingable hostname " + main_icmp_host + " ...")
+		print(ssb.working + " Testing pingable hostname " + main_icmp_host + " ...")
 		ping_t1 = ping(main_icmp_host, normal_ping_packetcount, interfaces[0])
 		if ping_t1 == True:
-			print(ssb.success + "Connection to main host successful!")
+			print(ssb.success + " Connection to main host successful!")
 			main_icmp_connection = True
 			synopsis()
 			exit()
 		else:
-			print(ssb.fail + "Could not ping main ICMP host (" + main_icmp_host + ")...")
+			print(ssb.fail + " Could not ping main ICMP host (" + main_icmp_host + ")...")
 			main_icmp_connection = False
 			# Pingtest 2 #
-			print(ssb.working + "Testing IPv4 Host " + main_icmp_dns_host +  " ...")
+			print(ssb.working + " Testing IPv4 Host " + main_icmp_dns_host +  " ...")
 			ping_t2 = ping(main_icmp_dns_host, normal_ping_packetcount, interfaces[0])
 			if ping_t2 == True:
-				print(ssb.success + "Connection to IPv4 host successful!")
+				print(ssb.success + " Connection to IPv4 host successful!")
 				main_ipv4_connection = True
-				print(ssb.warning + "You are connected to the internet but your current DNS servers don't seem to be working.")	
-				print(ssb.warning + "Check /etc/resolv.conf to make sure your nameservers are correct")
-				print(ssb.working + "Confirming with nslookup...")
+				print(ssb.warning + " You are connected to the internet but your current DNS servers don't seem to be working.")	
+				print(ssb.warning + " Check /etc/resolv.conf to make sure your nameservers are correct")
+				print(ssb.working + " Confirming with nslookup...")
 				nsl = os.system('nslookup ' + main_icmp_host + ' ' + main_icmp_dns_host)
 				if nsl != 0:
-					print(ssb.fail + "Confirmed DNS server is down!")
+					print(ssb.fail + " Confirmed DNS server is down!")
 					main_icmp_dns_resolve = False
 					synopsis()
 					exit()
 				elif nsl == 0:
-					print(ssb.success + "Successfully resolved hostname...")
-					print(ssb.fail + "This is an issue this program cannot detect")
-					print(ssb.fail + "You cannot ping your DNS server but you can resolve hostnames... This should never happen")
+					print(ssb.success + " Successfully resolved hostname...")
+					print(ssb.fail + " This is an issue this program cannot detect")
+					print(ssb.fail + " You cannot ping your DNS server but you can resolve hostnames... This should never happen")
 					main_icmp_dns_resolve = True
 					synopsis()
 					exit()
 			else:
-				print(ssb.fail + "Could not ping main IPv4 host (" + main_icmp_dns_host + ")...")
+				print(ssb.fail + " Could not ping main IPv4 host (" + main_icmp_dns_host + ")...")
 				main_ipv4_connection = False
-				print(ssb.warning + "There is a good chance that you aren't connected to the internet...")
-				print(ssb.working + "Testing local gateway...")
+				print(ssb.warning + " There is a good chance that you aren't connected to the internet...")
+				print(ssb.working + " Testing local gateway...")
 				gateway = get_default_gateway()
 				ping_t3 = ping(gateway, normal_ping_packetcount, interfaces[0])
 				if ping_t3 == True:
-					print(ssb.success + "Connection to local gateway " + str(gateway) + " successful!")
-					print(ssb.working + "You are on a local only network.  There is no external internet connection.")
+					print(ssb.success + " Connection to local gateway " + str(gateway) + " successful!")
+					print(ssb.working + " You are on a local only network.  There is no external internet connection.")
 					local_ipv4_connection = True
 					synopsis()
 					exit()
 				else:
-					print(ssb.fail + "Could not ping local gateway " + str(gateway) + "...")
-					print(ssb.warning + "You don't seem to be connected to a functional network.")
+					print(ssb.fail + " Could not ping local gateway " + str(gateway) + "...")
+					print(ssb.warning + " You don't seem to be connected to a functional network.")
 					synopsis()
 					exit()
 	else:
-		print(ssb.fail + "-f option not yet implemented")
+		print(ssb.fail + " -f option not yet implemented")
 		exit()		
 
 if __name__ == "__main__":
