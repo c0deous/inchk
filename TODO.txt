@@ -1,0 +1,9 @@
+TODO
+
+- Add su priv checker (and option to default to udp)
+- -f option for secondary hostnames
+- cli options for custom per-run based hosts to test
+- cli options to disable a specific test
+
+
+- more color

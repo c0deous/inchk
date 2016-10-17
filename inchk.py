@@ -1,56 +1,25 @@
-# Inchk.py
-# Script to quickly check for an internet connection
-# Requires ANSI to be enabled for colors to work
-# By Jesse Wallace (c0deous)
-# jessewallace.net
+#!/usr/bin/env python
+# encoding: utf-8
 
-# Load Libraries #
-import os, sys, optparse, socket, struct, time
+# Inchk
+#
+# Test an interwebz connection with the quickness
+# By Jesse Wallace (@c0deous)
 
-# ----------------Settings----------------------- #
+# < BEGIN SETTINGS > #
 
-# This should be your most reliable host.  Google.com is probably the best.
+# Most reliable host
 main_icmp_host = 'google.com'
 
-# This should be your DNS Server.  If main_icmp_hostname does not respond we will test this to determine if your DNS server of choice is down 
-main_icmp_dns_host = '8.8.8.8' # 8.8.8.8 is Google's public DNS service.
+# If main_icmp_host is MIA > ping this to determine if your DNS server of choice is down 
+main_icmp_dns_host = '8.8.8.8'
 
 # These will be pinged when this utility is run with the -f option.  
-secondary_icmp_hostnames = ['apple.com', 'youtube.com', 'netflix.com'] # Add as many as you want just in quotations and separted by a comma and a space. #NYI
+secondary_icmp_hostnames = ['apple.com', 'youtube.com', 'netflix.com'] #NYI
 
-# Default Interfaces (get using ifconfig)
-interfaces = ['wlan0', 'eth2', 'lo'] # List all interfaces in order of most used to least used
+# < END SETTINGS > #
 
-# Default ping packets to send
-normal_ping_packetcount = 1
-foption_ping_packetcount = 10 # When using -f option it will ping this many times #NYI
-
-# Parse CLI Options
-parser = optparse.OptionParser()
-parser.add_option('-f', action='store_true', default=False, dest="foption") # NYI
-
-(options, args) = parser.parse_args()
-
-
-
-# Functions #
-def ping(host, pingtimes, interface):
-	try: 
-		pingtimes = int(pingtimes)
-	except ValueError:
-		print(ssb.fail + " Encountered a ValueError when setting pingtimes (pingtimes must be an integer and wasn't)")
-		exit()
-
-	if pingtimes == 0:
-		response = os.system('ping -c 3 -I ' + str(interface) + ' ' + str(host) + ' > /dev/null 2>&1')
-		time.sleep(5)
-	else:
-		response = os.system('ping -c ' + str(pingtimes) + ' -I ' + str(interface) + ' ' + str(host) + '  > /dev/null 2>&1')
-		time.sleep(5)
-	if response == 0:
-		return True
-	else:
-		return False
+import os, sys, socket, struct, time, pyping, optparse
 
 def get_default_gateway():
     """Read the default gateway directly from /proc."""
@@ -82,71 +51,101 @@ class ssb:
 	warning = txtclr("[!]", "WARNING")
 	fail = txtclr("[-]", "FAIL")
 
+def synopsis(pingobjs, conclusion, statement):
+    print('Network Synopsis: %s' % (statement))
+    if conclusion[0] != 'N/A':
+        print('  Main Connection: %s' % (conclusion[0]))
+        print('    Max Response: %s ms' % (pingobjs[0].max_rtt))
+        print('    Min Response: %s ms' % (pingobjs[0].min_rtt))
+        print('    Avg Response: %s ms' % (pingobjs[0].avg_rtt))
+    if conclusion[1] != 'N/A':
+        print('  DNS Connection: %s' % (conclusion[1]))
+        print('    Max Response: %s ms' % (pingobjs[1].max_rtt))
+        print('    Min Response: %s ms' % (pingobjs[1].min_rtt))
+        print('    Avg Response: %s ms' % (pingobjs[1].avg_rtt))
+    if conclusion[2] != 'N/A':
+        print('  Local Gateway Connection: %s' % (conclusion[2]))
+        print('    Max Response: %s ms' % (pingobjs[2].max_rtt))
+        print('    Min Response: %s ms' % (pingobjs[2].min_rtt))
+        print('    Avg Response: %s ms' % (pingobjs[2].avg_rtt))
+    
+
 def main():
-	def synopsis():
-		pass
 	print(txtclr("Inchk 1.0 Copyright 2015 Jesse Wallace", "HEADER"))
 	if options.foption != True:
-		print(ssb.working + " Testing pingable hostname " + main_icmp_host + " ...")
-		ping_t1 = ping(main_icmp_host, normal_ping_packetcount, interfaces[0])
-		if ping_t1 == True:
-			print(ssb.success + " Connection to main host successful!")
-			main_icmp_connection = True
-			synopsis()
-			exit()
-		else:
-			print(ssb.fail + " Could not ping main ICMP host (" + main_icmp_host + ")...")
-			main_icmp_connection = False
-			# Pingtest 2 #
-			print(ssb.working + " Testing IPv4 Host " + main_icmp_dns_host +  " ...")
-			ping_t2 = ping(main_icmp_dns_host, normal_ping_packetcount, interfaces[0])
-			if ping_t2 == True:
-				print(ssb.success + " Connection to IPv4 host successful!")
-				main_ipv4_connection = True
-				print(ssb.warning + " You are connected to the internet but your current DNS servers don't seem to be working.")	
-				print(ssb.warning + " Check /etc/resolv.conf to make sure your nameservers are correct")
-				print(ssb.working + " Confirming with nslookup...")
-				nsl = os.system('nslookup ' + main_icmp_host + ' ' + main_icmp_dns_host)
-				if nsl != 0:
-					print(ssb.fail + " Confirmed DNS server is down!")
-					main_icmp_dns_resolve = False
-					synopsis()
-					exit()
-				elif nsl == 0:
-					print(ssb.success + " Successfully resolved hostname...")
-					print(ssb.fail + " This is an issue this program cannot detect")
-					print(ssb.fail + " You cannot ping your DNS server but you can resolve hostnames... This should never happen")
-					main_icmp_dns_resolve = True
-					synopsis()
-					exit()
-			else:
-				print(ssb.fail + " Could not ping main IPv4 host (" + main_icmp_dns_host + ")...")
-				main_ipv4_connection = False
-				print(ssb.warning + " There is a good chance that you aren't connected to the internet...")
-				print(ssb.working + " Testing local gateway...")
-				gateway = get_default_gateway()
-				ping_t3 = ping(gateway, normal_ping_packetcount, interfaces[0])
-				if ping_t3 == True:
-					print(ssb.success + " Connection to local gateway " + str(gateway) + " successful!")
-					print(ssb.working + " You are on a local only network.  There is no external internet connection.")
-					local_ipv4_connection = True
-					synopsis()
-					exit()
-				else:
-					print(ssb.fail + " Could not ping local gateway " + str(gateway) + "...")
-					print(ssb.warning + " You don't seem to be connected to a functional network.")
-					synopsis()
-					exit()
-	else:
-		print(ssb.fail + " -f option not yet implemented")
-		exit()		
+                # Test 1
+                try:
+		    print("%s Testing %s ..." % (ssb.working, main_icmp_host))
+		    ping_t1 = pyping.ping(main_icmp_host)
+                    # Will raise unknown_host here if unsuccessful
+                    print('%s Successfully reached %s!' % (ssb.success, main_icmp_host))
+                    if float(ping_t1.avg_rtt) >= 110.0:
+                         print('%s Average response time is abnormally high' % (ssb.warning))
+                    elif float(ping_t1.avg_rtt) >= 90.0:
+                         print('%s Average response time is high' % (ssb.warning))
+                    synopsis([ping_t1, 'N/A', 'N/A'], [txtclr('Successful', 'OKGREEN'), 'N/A', 'N/A'], 'Good connection')
+                    exit()
+                except (Exception, 'unknown_host'):
+                    print('%s Couldn\'t reach %s ...' % (ssb.fail, main_icmp_host))
+                # Test 2
+                try:
+                    print('%s Testing %s ...' % (ssb.working, main_icmp_dns_host))
+                    ping_t2 = pyping.ping(main_icmp_dns_host)
+                    # Will raise unknown_host here if unsuccessful
+                    print('%s Successfully reached %s!' %s (ssb.success, main_icmp_dns_host))
+                    if float(ping_t2.avg_rtt) >= 110.0:
+                         print('%s Average response time is abnormally high' % (ssb.warning))
+                    elif float(ping_t2.avg_rtt) >= 90.0:
+                         print('%s Average response time is high' % (ssb.warning))
+                    synopsis([ping_t1, ping_t2, 'N/A'], [txtclr('Failed', 'FAIL'), txtclr('Successful', 'OKGREEN'), 'N/A'], 'Your DNS server is reachable but may not be serving DNS requests correctly')
+                    exit()
+                except (Exception, 'unknown_host'):
+                    print('%s Couldn\'t reach %s ...' % (ssb.fail, main_icmp_dns_host))
+                # Test 3
+                try:
+                    defaultgateway = get_default_gateway()
+                    print('%s Testing local gateway %s ...' % (ssb.working, defaultgateway))
+                    ping_t3 = pyping.ping(defaultgateway)
+                    # Will raise unknown_host here if unsuccessful
+                    print('%s Successfully reached local gateway %s' % (ssb.working, defaultgateway))
+                    if float(ping_t3.avg_rtt) >= 15.0:
+                        print('%s Average response time is abnormally high' % (ssb.warning))
+                    elif float(ping_t3.avg_rtt) >= 5.0:
+                        print('%s Average response time is high' % (ssb.warning))
+                    synopsis([ping_t1, ping_t2, ping_t3], [txtclr('Failed', 'FAIL'), txtclr('Failed', 'FAIL'), txtclr('Successful', 'OKGREEN')], 'Your LAN is not connected to the WAN')
+                    exit()
+                except (Exception, 'unknown_host'):
+                    print('%s Couldn\'t reach %s ...' % (ssb.fail, defaultgateway))
+                synopsis(['N/A', 'N/A', 'N/A'], ['N/A', 'N/A', 'N/A'], 'You are not connected to a functional LAN')
+
+def synopsis(pingobjs, conclusion, statement):
+    print('Network Synopsis: %s' % (statement))
+    if conclusion[0] != 'N/A':
+        print('  Main Connection: %s' % (conclusion[0]))
+        print('    Max Response: %s ms' % (pingobjs[0].max_rtt))
+        print('    Min Response: %s ms' % (pingobjs[0].min_rtt))
+        print('    Avg Response: %s ms' % (pingobjs[0].avg_rtt))
+    if conclusion[1] != 'N/A':
+        print('  DNS Connection: %s' % (conclusion[1]))
+        print('    Max Response: %s ms' % (pingobjs[1].max_rtt))
+        print('    Min Response: %s ms' % (pingobjs[1].min_rtt))
+        print('    Avg Response: %s ms' % (pingobjs[1].avg_rtt))
+    if conclusion[2] != 'N/A':
+        print('  Local Gateway Connection: %s' % (conclusion[2]))
+        print('    Max Response: %s ms' % (pingobjs[2].max_rtt))
+        print('    Min Response: %s ms' % (pingobjs[2].min_rtt))
+        print('    Avg Response: %s ms' % (pingobjs[2].avg_rtt))
 
 if __name__ == "__main__":
-	main()
+    parser = optparse.OptionParser()
+    parser.add_option('-f', action='store_true', default=False, dest="foption") # NYI
+
+    (options, args) = parser.parse_args()
+
+    main()
 
 
-""" Copyright 2015 Jesse Wallace (c0deous)
-    c0deous.business@gmail.com
+""" Copyright 2016 Jesse Wallace (@c0deous) - business@c0deo.us
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

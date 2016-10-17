@@ -1,21 +1,19 @@
 # Inchk
 
-Inchk (Internet Check) is a small utility written in python that quickly checks your network access.  The only dependency is ANSI enabled (which should be default on linux).
-It takes the following steps to determine your network access
-Ping Main Host (google.com default) 
-if failed then...
-Ping Main DNS (8.8.8.8 default)
-if Main DNS ping succeeds then...
-confirm by resolving with nslookup...
-if Main DNS ping fails then...
-lookup gateway and attempt to ping...
-if fails...
-You are not connected to a functional network
+Inchk (Internet Check) is a small utility written in python that quickly checks the scope of your network access.  The only dependency is Pyping (pip install pyping, apt-get install python-pyping)
 
-In the future there will be a working -f option that will ping secondary hostnames and IP addresses.  I find that the default test is sufficient.
+Logic Path:
+   Test Main Host (google.com default) 
+   if failed then...
+     Test Main DNS (8.8.8.8 default)
+     if fails then...
+       lookup gateway and attempt to ping...
+       if fails then...
+         You are not connected to a functional LAN network
 
-Copyright 2015 Jesse Wallace
-c0deous.business@gmail.com
+In the future there will be a working -f option that will test a secondary set of hostnames and IP addresses.  I find that the default test is sufficient.
+
+Copyright 2016 Jesse Wallace (@c0deous) - business@c0deo.us
 
 This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
