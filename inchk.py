@@ -128,8 +128,11 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args()
 
-    main()
-
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('\nQuitting...')
+        exit()
 
 """ Copyright 2016 Jesse Wallace (@c0deous) - business@c0deo.us
 
