@@ -1,0 +1,16 @@
+While of course you can always run it straight from the .py file it is also helpful for mobility to link it to a directory in your $PATH.
+
+Installation example:
+# git clone https://github.com/c0deous/inchk.git
+# cd inchk
+# ln -s `pwd`/inchk.py /usr/bin/inchk
+
+And then you can:
+
+# inchk
+
+To run it.
+
+
+
+by @c0deous
