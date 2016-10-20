@@ -51,29 +51,10 @@ class ssb:
 	warning = txtclr("[!]", "WARNING")
 	fail = txtclr("[-]", "FAIL")
 
-def synopsis(pingobjs, conclusion, statement):
-    print('Network Synopsis: %s' % (statement))
-    if conclusion[0] != 'N/A':
-        print('  Main Connection: %s' % (conclusion[0]))
-        print('    Max Response: %s ms' % (pingobjs[0].max_rtt))
-        print('    Min Response: %s ms' % (pingobjs[0].min_rtt))
-        print('    Avg Response: %s ms' % (pingobjs[0].avg_rtt))
-    if conclusion[1] != 'N/A':
-        print('  DNS Connection: %s' % (conclusion[1]))
-        print('    Max Response: %s ms' % (pingobjs[1].max_rtt))
-        print('    Min Response: %s ms' % (pingobjs[1].min_rtt))
-        print('    Avg Response: %s ms' % (pingobjs[1].avg_rtt))
-    if conclusion[2] != 'N/A':
-        print('  Local Gateway Connection: %s' % (conclusion[2]))
-        print('    Max Response: %s ms' % (pingobjs[2].max_rtt))
-        print('    Min Response: %s ms' % (pingobjs[2].min_rtt))
-        print('    Avg Response: %s ms' % (pingobjs[2].avg_rtt))
-    
-
 def main():
-	print(txtclr("Inchk 1.0 Copyright 2015 Jesse Wallace", "HEADER"))
+	print(txtclr("Inchk 2.1 Copyright 2016 Jesse Wallace", "HEADER"))
 	if options.foption != True:
-                # Test 1
+                # Test 1 - Main Host
                 try:
 		    print("%s Testing %s ..." % (ssb.working, main_icmp_host))
 		    ping_t1 = pyping.ping(main_icmp_host)
@@ -85,9 +66,14 @@ def main():
                          print('%s Average response time is high' % (ssb.warning))
                     synopsis([ping_t1, 'N/A', 'N/A'], [txtclr('Successful', 'OKGREEN'), 'N/A', 'N/A'], 'Good connection')
                     exit()
+                except socket.error as se:
+                    print(' ')
+                    print('%s Socket Error: %s' % (ssb.fail, se))
+                    exit()
                 except (Exception, 'unknown_host'):
                     print('%s Couldn\'t reach %s ...' % (ssb.fail, main_icmp_host))
-                # Test 2
+
+                # Test 2 - Main DNS
                 try:
                     print('%s Testing %s ...' % (ssb.working, main_icmp_dns_host))
                     ping_t2 = pyping.ping(main_icmp_dns_host)
@@ -101,7 +87,7 @@ def main():
                     exit()
                 except (Exception, 'unknown_host'):
                     print('%s Couldn\'t reach %s ...' % (ssb.fail, main_icmp_dns_host))
-                # Test 3
+                # Test 3 - Local Gateway
                 try:
                     defaultgateway = get_default_gateway()
                     print('%s Testing local gateway %s ...' % (ssb.working, defaultgateway))
