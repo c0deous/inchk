@@ -65,11 +65,11 @@ def main():
                     elif float(ping_t1.avg_rtt) >= 90.0:
                          print('%s Average response time is high' % (ssb.warning))
                     synopsis([ping_t1, 'N/A', 'N/A'], [txtclr('Successful', 'OKGREEN'), 'N/A', 'N/A'], 'Good connection')
-                    exit()
+                    raise SystemExit
                 except socket.error as se:
                     print(' ')
                     print('%s Socket Error: %s' % (ssb.fail, se))
-                    exit()
+                    raise SystemExit
                 except (Exception, 'unknown_host'):
                     print('%s Couldn\'t reach %s ...' % (ssb.fail, main_icmp_host))
 
@@ -84,7 +84,7 @@ def main():
                     elif float(ping_t2.avg_rtt) >= 90.0:
                          print('%s Average response time is high' % (ssb.warning))
                     synopsis([ping_t1, ping_t2, 'N/A'], [txtclr('Failed', 'FAIL'), txtclr('Successful', 'OKGREEN'), 'N/A'], 'Your DNS server is reachable but may not be serving DNS requests correctly')
-                    exit()
+                    raise SystemExit
                 except (Exception, 'unknown_host'):
                     print('%s Couldn\'t reach %s ...' % (ssb.fail, main_icmp_dns_host))
                 # Test 3 - Local Gateway
@@ -99,7 +99,7 @@ def main():
                     elif float(ping_t3.avg_rtt) >= 5.0:
                         print('%s Average response time is high' % (ssb.warning))
                     synopsis([ping_t1, ping_t2, ping_t3], [txtclr('Failed', 'FAIL'), txtclr('Failed', 'FAIL'), txtclr('Successful', 'OKGREEN')], 'Your LAN is not connected to the WAN')
-                    exit()
+                    raise SystemExit
                 except (Exception, 'unknown_host'):
                     print('%s Couldn\'t reach %s ...' % (ssb.fail, defaultgateway))
                 synopsis(['N/A', 'N/A', 'N/A'], ['N/A', 'N/A', 'N/A'], 'You are not connected to a functional LAN')
@@ -132,7 +132,7 @@ if __name__ == "__main__":
         main()
     except KeyboardInterrupt:
         print('\nQuitting...')
-        exit()
+        raise SystemExit
 
 """ Copyright 2016 Jesse Wallace (@c0deous) - business@c0deo.us
 
